@@ -200,7 +200,7 @@ func (receiver *ProxyHandler) serveHTTP(rw http.ResponseWriter, r *http.Request)
 	response.Body.Close()
 }
 
-func (*ProxyHandler) serveOptions(rw http.ResponseWriter, r *http.Request) {
+func (receiver *ProxyHandler) serveOptions(rw http.ResponseWriter, r *http.Request) {
 	if nil == receiver {
 		return
 	}
