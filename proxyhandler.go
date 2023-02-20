@@ -1,9 +1,11 @@
 package cors
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 )
 
 // ProxyHandler is used to create a CORS proxy.
@@ -59,13 +61,13 @@ func (receiver *ProxyHandler) logRequest(r *http.Request) {
 	fmt.Fprintf(w, "CLIENT REQUEST: %s http://%s%s\n", r.Method, r.Host, r.URL.RequestURI())
 }
 
-func (receiver *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if nil == w {
+func (receiver *ProxyHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+	if nil == rw {
 /////////////// RETURN
 		return
 	}
 	if nil == r {
-		http.Error(w, "WTF?!?!? — Internal Server Error", http.StatusInternalServerError)
+		http.Error(rw, "WTF?!?!? — Internal Server Error", http.StatusInternalServerError)
 /////////////// RETURN
 		return
 	}
@@ -74,59 +76,107 @@ func (receiver *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 
 	switch r.Method {
 	case http.MethodOptions:
-		receiver.serveOptions(w, r)
+		receiver.serveOptions(rw, r)
 	default:
-		receiver.serveHTTP(w, r)
+		receiver.serveHTTP(rw, r)
 	}
 }
 
-func (receiver *ProxyHandler) serveHTTP(w http.ResponseWriter, r *http.Request) {
+func (receiver *ProxyHandler) serveHTTP(rw http.ResponseWriter, r *http.Request) {
 
-	var method string = r.Method
+	var proxiedMethod string = r.Method
 
-	var url string
+	var proxiedURL string
 	{
-		url = r.URL.RequestURI()
-		if 1 <= len(url) && '/' == url[0] {
-			url = url[1:]
+		proxiedURL = r.URL.RequestURI()
+		if 1 <= len(proxiedURL) && '/' == proxiedURL[0] {
+			proxiedURL = proxiedURL[1:]
 		}
 	}
 
-	var req *http.Request
+	var proxiedRequest *http.Request
 	{
 		var err error
 
-		req, err = http.NewRequest(method, url, nil)
+		proxiedRequest, err = http.NewRequest(proxiedMethod, proxiedURL, nil)
 		if nil != err {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
 /////////////////////// RETURN
 			return
 		}
 	}
-	receiver.logProxyRequest(req)
+	receiver.logProxyRequest(proxiedRequest)
 
-	var resp *http.Response
+	var proxiedResponse *http.Response
 	{
 		var client http.Client
 
 		var err error
 
-		resp, err = client.Do(req)
+		proxiedResponse, err = client.Do(proxiedRequest)
 		if nil != err {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
 /////////////////////// RETURN
 			return
 		}
 	}
-	receiver.logProxyResponse(resp)
+	receiver.logProxyResponse(proxiedResponse)
 
-	addCORSHeaders(resp.Header)
-	resp.Write(w)
+	var response *http.Response
+	{
+		var respBuffer strings.Builder
+		err := proxiedResponse.Write(&respBuffer)
+		if nil != err {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+/////////////////////// RETURN
+			return
+		}
+
+		var reader io.Reader = strings.NewReader(respBuffer.String())
+		if nil != err {
+			http.Error(rw, "Internal Server Error", http.StatusInternalServerError)
+/////////////////////// RETURN
+			return
+		}
+		if nil == reader {
+			http.Error(rw, "Internal Server Error", http.StatusInternalServerError)
+/////////////////////// RETURN
+			return
+		}
+
+		var bufReader *bufio.Reader = bufio.NewReader(reader)
+		if nil == bufReader {
+			http.Error(rw, "Internal Server Error", http.StatusInternalServerError)
+/////////////////////// RETURN
+			return
+		}
+
+		response, err = http.ReadResponse(bufReader, proxiedRequest)
+		if nil != err {
+			http.Error(rw, "Internal Server Error", http.StatusInternalServerError)
+/////////////////////// RETURN
+			return
+		}
+	}
+
+	addCORSHeaders(response.Header)
+
+	for name, values := range response.Header {
+
+		for _, value := range values {
+
+			rw.Header().Add(name, value)
+		}
+	}
+
+	rw.WriteHeader(response.StatusCode)
+	io.Copy(rw, response.Body)
+	response.Body.Close()
 }
 
-func (*ProxyHandler) serveOptions(w http.ResponseWriter, r *http.Request) {
-	addCORSHeaders(w.Header())
-	w.WriteHeader(http.StatusNoContent)
+func (*ProxyHandler) serveOptions(rw http.ResponseWriter, r *http.Request) {
+	addCORSHeaders(rw.Header())
+	rw.WriteHeader(http.StatusNoContent)
 }
 
 func addCORSHeaders(header http.Header) {
