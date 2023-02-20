@@ -35,8 +35,14 @@ type ProxyHandler struct {
 }
 
 func (receiver *ProxyHandler) logProxyRequest(r *http.Request) {
+	if nil == receiver {
+/////////////// RETURN
+		return
+	}
+
 	var w io.Writer = receiver.LogWriter
 	if nil == w {
+/////////////// RETURN
 		return
 	}
 
@@ -44,8 +50,14 @@ func (receiver *ProxyHandler) logProxyRequest(r *http.Request) {
 }
 
 func (receiver *ProxyHandler) logProxyResponse(resp *http.Response) {
+	if nil == receiver {
+/////////////// RETURN
+		return
+	}
+
 	var w io.Writer = receiver.LogWriter
 	if nil == w {
+/////////////// RETURN
 		return
 	}
 
@@ -53,8 +65,14 @@ func (receiver *ProxyHandler) logProxyResponse(resp *http.Response) {
 }
 
 func (receiver *ProxyHandler) logRequest(r *http.Request) {
+	if nil == receiver {
+/////////////// RETURN
+		return
+	}
+
 	var w io.Writer = receiver.LogWriter
 	if nil == w {
+/////////////// RETURN
 		return
 	}
 
@@ -62,6 +80,11 @@ func (receiver *ProxyHandler) logRequest(r *http.Request) {
 }
 
 func (receiver *ProxyHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+	if nil == receiver {
+/////////////// RETURN
+		return
+	}
+
 	if nil == rw {
 /////////////// RETURN
 		return
@@ -83,6 +106,9 @@ func (receiver *ProxyHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request)
 }
 
 func (receiver *ProxyHandler) serveHTTP(rw http.ResponseWriter, r *http.Request) {
+	if nil == receiver {
+		return
+	}
 
 	var proxiedMethod string = r.Method
 
@@ -175,6 +201,10 @@ func (receiver *ProxyHandler) serveHTTP(rw http.ResponseWriter, r *http.Request)
 }
 
 func (*ProxyHandler) serveOptions(rw http.ResponseWriter, r *http.Request) {
+	if nil == receiver {
+		return
+	}
+
 	addCORSHeaders(rw.Header())
 	rw.WriteHeader(http.StatusNoContent)
 }
