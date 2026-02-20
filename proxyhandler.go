@@ -200,6 +200,7 @@ func (receiver *ProxyHandler) serveHTTP(rw http.ResponseWriter, r *http.Request)
 	response.Body.Close()
 }
 
+// serveOptions serves the HTTP response to an "OPTIONS" request.
 func (receiver *ProxyHandler) serveOptions(rw http.ResponseWriter, r *http.Request) {
 	if nil == receiver {
 		return
@@ -209,11 +210,19 @@ func (receiver *ProxyHandler) serveOptions(rw http.ResponseWriter, r *http.Reque
 	rw.WriteHeader(http.StatusNoContent)
 }
 
+// addCORSHeaders ads CORS headers to an [http.Header].
+//
+// If the HTTP methods specified are empty, it defaults to:
+//
+//	"GET, DELETE, HEAD, OPTIONS, PATCH, POST, PUT, TRACE"
+//
+// See also: [allowedMethods]
 func addCORSHeaders(header http.Header, methods ...string) {
 	header.Add("Access-Control-Allow-Origin", "*")
 	header.Add("Access-Control-Allow-Methods", allowedMethods(methods...))
 }
 
+// allowedMethods creates the value for the "Access-Control-Allow-Methods" HTTP response header.
 func allowedMethods(methods ...string) string {
 	if len(methods) <= 0 {
 		return  "GET, DELETE, HEAD, OPTIONS, PATCH, POST, PUT, TRACE"
