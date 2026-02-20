@@ -31,7 +31,22 @@ import (
 //	
 //	err := http.ListenAndServe(addr, handler)
 type ProxyHandler struct {
+	// Let you chose which HTTP methods are in the value of the HTTP "Access-Control-Allow-Methods" response header.
+	//
+	// If left empty, defaults to:
+	//
+	//	[]string{"GET", "DELETE", "HEAD", "OPTIONS", "PATCH", "POST", "PUT", "TRACE"}
+	//
+	// To include WebDAV HTTP request methods, use:
+	//
+	//	[]string{"COPY", "GET", "DELETE", "HEAD","LOCK", "MKCOL", "MOVE", "OPTIONS", "PATCH", "POST", "PROPFIND", "PROPPATCH", "PUT", "TRACE", "UNLOCK"}
+	//
+	// Remember that HTTP request methods are case-sensitive.
+	// I.e., "GET" and "get" are, according to the HTTP specifications, different methods.
+	// (Most HTTP request methods tends to be upper-case.)
 	Methods   []string
+
+	// Where logs gets written to.
 	LogWriter io.Writer
 }
 
