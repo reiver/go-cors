@@ -209,7 +209,15 @@ func (receiver *ProxyHandler) serveOptions(rw http.ResponseWriter, r *http.Reque
 	rw.WriteHeader(http.StatusNoContent)
 }
 
-func addCORSHeaders(header http.Header) {
+func addCORSHeaders(header http.Header, methods ...string) {
 	header.Add("Access-Control-Allow-Origin", "*")
-	header.Add("Access-Control-Allow-Methods", "GET, DELETE, HEAD, OPTIONS, PATCH, POST, PUT, TRACE")
+	header.Add("Access-Control-Allow-Methods", allowedMethods(methods...))
+}
+
+func allowedMethods(methods ...string) string {
+	if len(methods) <= 0 {
+		return  "GET, DELETE, HEAD, OPTIONS, PATCH, POST, PUT, TRACE"
+	}
+
+	return strings.Join(methods, ", ")
 }
