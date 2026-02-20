@@ -31,6 +31,7 @@ import (
 //	
 //	err := http.ListenAndServe(addr, handler)
 type ProxyHandler struct {
+	Methods   []string
 	LogWriter io.Writer
 }
 
@@ -206,7 +207,7 @@ func (receiver *ProxyHandler) serveOptions(rw http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	addCORSHeaders(rw.Header())
+	addCORSHeaders(rw.Header(), receiver.Methods...)
 	rw.WriteHeader(http.StatusNoContent)
 }
 
