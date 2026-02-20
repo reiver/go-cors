@@ -95,6 +95,7 @@ func (receiver *ProxyHandler) logRequest(r *http.Request) {
 	fmt.Fprintf(w, "CLIENT REQUEST: %s http://%s%s\n", r.Method, r.Host, r.URL.RequestURI())
 }
 
+// ServeHTTP makes [ProxyHandler] an [http.Handler].
 func (receiver *ProxyHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	if nil == receiver {
 /////////////// RETURN
