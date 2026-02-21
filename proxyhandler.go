@@ -210,7 +210,7 @@ func (receiver *ProxyHandler) serveHTTP(rw http.ResponseWriter, r *http.Request)
 		}
 	}
 
-	addCORSHeaders(response.Header)
+	addCORSHeaders(response.Header, receiver.Methods...)
 
 	for name, values := range response.Header {
 
