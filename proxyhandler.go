@@ -147,6 +147,19 @@ func (receiver *ProxyHandler) serveHTTP(rw http.ResponseWriter, r *http.Request)
 /////////////////////// RETURN
 			return
 		}
+
+		for name, values := range r.Header {
+
+			switch name {
+			case "Connection", "Keep-Alive", "Proxy-Authorization", "Proxy-Connection", "Te", "Transfer-Encoding", "Upgrade":
+				continue
+			}
+
+			for _, value := range values {
+
+				proxiedRequest.Header.Add(name, value)
+			}
+		}
 	}
 	receiver.logProxyRequest(proxiedRequest)
 
