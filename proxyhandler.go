@@ -176,11 +176,6 @@ func (receiver *ProxyHandler) serveHTTP(rw http.ResponseWriter, r *http.Request)
 		}
 
 		var reader io.Reader = strings.NewReader(respBuffer.String())
-		if nil != err {
-			http.Error(rw, "Internal Server Error", http.StatusInternalServerError)
-/////////////////////// RETURN
-			return
-		}
 		if nil == reader {
 			http.Error(rw, "Internal Server Error", http.StatusInternalServerError)
 /////////////////////// RETURN
