@@ -141,7 +141,7 @@ func (receiver *ProxyHandler) serveHTTP(rw http.ResponseWriter, r *http.Request)
 	{
 		var err error
 
-		proxiedRequest, err = http.NewRequest(proxiedMethod, proxiedURL, nil)
+		proxiedRequest, err = http.NewRequest(proxiedMethod, proxiedURL, r.Body)
 		if nil != err {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 /////////////////////// RETURN
